@@ -4,10 +4,6 @@
 from setuptools import setup, find_packages
 from siesta import __version__
 
-fd = open("README.md")
-long_description = fd.read()
-fd.close()
-
 setup(
     name='siesta',
     version=__version__,
