@@ -5,6 +5,7 @@ The python REST client.
 ##Usage
 
 Get the applications owned by the user 123:
+
 (GET http://example.org/api/v1/users/123/applications)
 
     from siesta import API
