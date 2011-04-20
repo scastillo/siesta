@@ -21,7 +21,8 @@ setup(
     packages=find_packages(),
     install_requires = ['simplejson'],
     classifiers=[
-        "Development Status :: 4 - Alpha",
-        "License :: OSI Approved :: GPL License",
+        "Development Status :: 2 - Pre-Alpha",
+        "Intended Audience :: Developers",
+        "License :: OSI Approved :: GNU General Public License (GPL)",
         ],
     )
