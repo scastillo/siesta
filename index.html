@@ -4,33 +4,64 @@
   <meta charset='utf-8'>
 
   <title>scastillo/siesta @ GitHub</title>
-
+  <link  href="http://fonts.googleapis.com/css?family=Yanone+Kaffeesatz:200,300,400,700" rel="stylesheet" type="text/css" >
+  <link  href="http://fonts.googleapis.com/css?family=Inconsolata:regular" rel="stylesheet" type="text/css" >
   <style type="text/css">
     body {
       margin-top: 1.0em;
-      background-color: #1a5e86;
+      background-color: silver;
       font-family: Helvetica, Arial, FreeSans, san-serif;
-      color: #ffffff;
+      color: #444;
     }
     #container {
       margin: 0 auto;
       width: 700px;
     }
-    h1 { font-size: 3.8em; color: #e5a179; margin-bottom: 3px; }
-    h1 .small { font-size: 0.4em; }
+    h1 { font-size: 5.8em; 
+         color: #40484f; 
+         margin-bottom: 3px; 
+         font-family: 'Yanone Kaffeesatz', serif;
+         font-weight: 400;
+         font-style: normal;
+         text-shadow: 1px 1px 1px #fff;
+         letter-spacing: -0.03em;
+    }
+    h1 .small { font-size: 0.2em; text-shadow: none; letter-spacing: 0;}
     h1 a { text-decoration: none }
-    h2 { font-size: 1.5em; color: #e5a179; }
-    h3 { text-align: center; color: #e5a179; }
-    a { color: #e5a179; }
-    .description { font-size: 1.2em; margin-bottom: 30px; margin-top: 30px; font-style: italic;}
+    h2 { font-size: 1.5em; color: #40484f; text-shadow: 1px 1px 0px #ddd;}
+    h3 { text-align: center; color: #40484f; }
+    a { color: #40484f; }
+    
+    .description {
+    color: #CE534D;
+    font-size: 1em;
+    margin-bottom: 30px;
+    margin-top: -20px;
+    text-shadow: 1px 1px 2px #EEE;
+    }
     .download { float: right; }
-    pre { background: #000; color: #fff; padding: 15px;}
+    pre { 
+    font-family: 'Inconsolata', serif;
+    margin: 5px 0 20px 20px;
+    background: #222; 
+    color: #fff; 
+    padding: 15px;
+    -webkit-border-radius: 10px;
+    -moz-border-radius: 10px;
+    border-radius: 10px;
+    -moz-box-shadow: inset -1px 2px 2px black;
+    -webkit-box-shadow: inset -1px 2px 2px black;
+    box-shadow: inset -1px 2px 2px black;
+    text-shadow: 0px 1px 0px rgba(0, 0, 0, 1);
+    }
     hr { border: 0; width: 80%; border-bottom: 1px solid #aaa}
     .footer { text-align:center; padding-top:30px; font-style: italic; }
   </style>
+  <link href="dessert.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="prettify.js"></script>
 </head>
 
-<body>
+<body onload="prettyPrint()">
   <a href="http://github.com/scastillo/siesta"><img style="position: absolute; top: 0; right: 0; border: 0;" src="http://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub" /></a>
 
   <div id="container">
@@ -42,23 +73,42 @@
         <img border="0" width="90" src="http://github.com/images/modules/download/tar.png"></a>
     </div>
 
-    <h1><a href="http://github.com/scastillo/siesta">siesta</a>
-      <span class="small">by <a href="http://github.com/scastillo">scastillo</a></span></h1>
+    <h1><a href="http://github.com/scastillo/siesta">Siesta</a></h1>
 
     <div class="description">
       Sit back, relax and enjoy of your python REST client
     </div>
+    
+    <pre class="prettyprint">
+      from siesta import API
+      api = API('http://myrestful/api/v1')
+      
+
+      #GET /resource
+      api.resource.get()
+      # GET /resource (with accept header = application/json)
+      api.resource.get(format='json')
+      # GET /resource?attr=value
+      api.resource.get(attr=value)
+      
+      
+      #POST /resource
+      api.resource.post(attr=value, attr2=value2, ...)
+      #GET /resource/id/resource_collection
+      api.resoure(id).resource_collection().get()
+    </pre>
+    
 
     <h2>Install</h2>
-<p>pip install siesta</p>
-<h2>License</h2>
-<p>GPLv3</p>
-<h2>Authors</h2>
-<p>scastillo (sebastian.castillo@cenuage.com)<br/><br/>      </p>
-<h2>Contact</h2>
-<p>Sebastian Castillo (castillobuiles@gmail.com)<br/>      </p>
-
-
+    <p>pip install siesta</p>
+    <h2>License</h2>
+    <p>GPLv3</p>
+    <h2>Authors</h2>
+    <p>scastillo (sebastian.castillo@cenuage.com)<br/><br/>      </p>
+    <h2>Contact</h2>
+    <p>Sebastian Castillo (castillobuiles@gmail.com)<br/>      </p>
+    
+    
     <h2>Download</h2>
     <p>
       You can download this project in either
@@ -67,7 +117,7 @@
     </p>
     <p>You can also clone the project with <a href="http://git-scm.com">Git</a>
       by running:
-      <pre>$ git clone git://github.com/scastillo/siesta</pre>
+      <pre class="prettyprint lang-sh">$ git clone git://github.com/scastillo/siesta</pre>
     </p>
 
     <div class="footer">
