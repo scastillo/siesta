@@ -4,9 +4,12 @@ The python REST client.
 
 ##Usage
 
-    from siesta import RestClient
-    api = RestClient('http://example.org')
-    user = api.users(id='123').get(format='json')
+Get the applications owned by the user 123:
+(GET http://example.org/api/v1/users/123/applications)
+
+    from siesta import API
+    api = API('http://example.org/api/v1')
+    user = api.users(123).applications.get()
     print "Hello %s!" % user.name
 
 
