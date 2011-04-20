@@ -1,21 +1,19 @@
 #Python Siesta
 
-The python REST client.
+     from siesta import API
+     api = API('http://myrestful/api/v1')
 
-##Usage
+     # GET /resource
+     api.resource.get()
+     # GET /resource (with accept header = application/json)
+     api.resource.get(format='json')
+     # GET /resource?attr=value
+     api.resource.get(attr=value)
 
-Get the applications owned by the user 123:
-
-(GET http://example.org/api/v1/users/123/applications)
-
-    from siesta import API
-    api = API('http://example.org/api/v1')
-    user = api.users(123).applications.get()
-    print "Hello %s!" % user.name
-
-
-##Why a REST client when i got httplib, libcurl, urllib, etc..?
-
+     # POST /resource
+     api.resource.post(attr=value, attr2=value2, ...)
+     # GET /resource/id/resource_collection
+     api.resoure(id).resource_collection().get()
 
 
 ##Other REST clients for python
