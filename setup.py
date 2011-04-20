@@ -14,10 +14,12 @@ setup(
     description='Sit back, relax and enjoy of your python REST client',
     author='Sebastián Castillo Builes',
     author_email='castillobuiles@gmail.com',
-    license='BSD',
+    license='GPL',
     keywords='REST RESTful API HTTP web service',
-    url="",
-    long_description=long_description,
+    url="http://scastillo.github.com/siesta/",
+    long_description="""
+    Siesta is a client library to consume RESTful web services.
+    """,
     packages=find_packages(),
     install_requires = ['simplejson'],
     classifiers=[
