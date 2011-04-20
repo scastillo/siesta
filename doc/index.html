@@ -7,8 +7,8 @@
   <link  href="http://fonts.googleapis.com/css?family=Yanone+Kaffeesatz:200,300,400,700" rel="stylesheet" type="text/css" >
   <link  href="http://fonts.googleapis.com/css?family=Inconsolata:regular" rel="stylesheet" type="text/css" >
   <link  href="http://fonts.googleapis.com/css?family=Molengo:regular" rel="stylesheet" type="text/css" >
-  <link href="siesta.css" type="text/css" rel="stylesheet" />
-  <link href="dessert.css" type="text/css" rel="stylesheet" />
+  <link href="/siesta.css" type="text/css" rel="stylesheet" />
+  <link href="/dessert.css" type="text/css" rel="stylesheet" />
   <script type="text/javascript" src="prettify.js"></script>
 </head>
 
@@ -31,37 +31,6 @@
       Sit back, relax and enjoy of your python REST client
     </div>
     <hr id="headerhr">
-    
-    <pre class="prettyprint">$pip install siesta</pre>
-    
-    <pre class="prettyprint">
-      from siesta import API
-      api = API('http://myrestful/api/v1')
-      
-      #GET /resource
-      api.resource.get()
-      # GET /resource (with accept header = application/json)
-      api.resource.get(format='json')
-      # GET /resource?attr=value
-      api.resource.get(attr=value)
-      
-      #POST /resource
-      api.resource.post(attr=value, attr2=value2, ...)
-      #GET /resource/id/resource_collection
-      api.resoure(id).resource_collection().get()</pre>
- 
-    <p>You can clone the project with <a href="http://git-scm.com">Git</a>
-      by running:
-      <pre class="prettyprint lang-sh">$ git clone git://github.com/scastillo/siesta</pre>
-    </p>
-    <h2 align="center">Now you can <a href="doc">Read full documentation</a> or <a href="http://groups.google.com/group/python-siesta">Discus siesta with other guys</a></h2>
-    <div class="footer">
-      <hr>
-      <p>Sebastian Castillo (castillobuiles@gmail.com)</p>      
-    </div>
-
   </div>
-
-  
 </body>
-</html>
+</hmlt>
