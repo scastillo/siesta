@@ -1,0 +1,16 @@
+.project
+.pydevproject
+.settings
+.coverage
+*.pyc
+*~
+.emacs.desktop
+.idea
+.coverage
+bin
+*/tests/coverage
+*.swp
+build
+dist
+*.egg-info
+.#.*
