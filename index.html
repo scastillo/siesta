@@ -38,16 +38,16 @@
       from siesta import API
       api = API('http://myrestful/api/v1')
       
-      #GET /resource
+      # GET /resource
       api.resource.get()
       # GET /resource (with accept header = application/json)
       api.resource.get(format='json')
       # GET /resource?attr=value
       api.resource.get(attr=value)
       
-      #POST /resource
+      # POST /resource
       api.resource.post(attr=value, attr2=value2, ...)
-      #GET /resource/id/resource_collection
+      # GET /resource/id/resource_collection
       api.resoure(id).resource_collection().get()</pre>
  
     <p>You can clone the project with <a href="http://git-scm.com">Git</a>
