@@ -11,13 +11,13 @@ body {
 }
 h1 { font-size: 5.8em; 
      color: #40484f; 
-     margin-bottom: 3px; 
+     margin-bottom: 0px; 
      font-family: 'Yanone Kaffeesatz', serif;
      font-weight: 400;
      font-style: normal;
      text-shadow: 1px 1px 1px #fff;
      letter-spacing: -0.03em;
-     margin-top: 0.2em;
+     margin-top: -0.1em;
    }
 h1 .small { font-size: 0.2em; text-shadow: none; letter-spacing: 0;}
 h1 a { text-decoration: none; color: #40484f;  }
@@ -28,7 +28,7 @@ a { color: #CE534D; }
 p {line-height: 0.4; font-size: 0.85em;}
 .description {
   font-family: 'Molengo', serif;
-  
+  padding-bottom: 10px;
   color: #CE534D;
   font-size: 1em;
   margin-bottom: 0px;
@@ -51,5 +51,5 @@ pre {
   text-shadow: 0px 1px 0px rgba(0, 0, 0, 1);
 }
 hr { border: 0; width: 80%; border-bottom: 1px solid #aaa}
-.footer { text-align:center; padding-top:10px; font-style: italic; }
-#headerhr {margin-bottom: 30px;}
+.footer { text-align:center; padding-top:0px; font-style: italic; }
+#headerhr {margin-bottom: 15px;}
