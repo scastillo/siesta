@@ -20,7 +20,7 @@ Siesta is a REST client for python
 """
 
 #__all__ = ["API", "Resource"]
-__version__ = "0.1"
+__version__ = "0.2"
 __author__ = "Sebastian Castillo <castillobuiles@gmail.com>"
 __contributors__ = []
 
@@ -28,33 +28,54 @@ import re
 import urllib
 import httplib
 import logging
+import simplejson as json
+
+from urlparse import urlparse
 
 USER_AGENT = "Python-siesta/%s" % __version__
 
 
 class Resource(object):
-    # Attrs defined statically here and not computed by getattr
-    STATIC_ATTRS = ('get', 'post', 'put', 'delete',)
 
+    # TODO: some attrs could be on a inner meta class
+    # so Resource can have a minimalist namespace  population
+    # and minimize collitions with resource attributes
     def __init__(self, uri, api):
-        self.scheme, self.host, self.url, z1, z2 = httplib.urlsplit(uri)
+        logging.info("init.uri: %s" % uri)
+        self.api = api
+        self.uri = uri
+        self.scheme, self.host, self.url, z1, z2 = httplib.urlsplit(self.api.base_url+'/'+self.uri)
         self.id = None
         self.conn = None
         self.headers = {'User-Agent': USER_AGENT}
-        self.api = api
-
+        self.attrs = {}
+        
     def __getattr__(self, name):
-        if name in self.STATIC_ATTRS:
-            return super(Resource, self).__getattr__(name)
+        """
+        Resource attributes (eg: user.name) have priority
+        over inner rerouces (eg: users(id=123).applications)
+        """
+        logging.info("getattr.name: %s" % name)
+        # Reource attrs like: user.name
+        if name in self.attrs:
+            return self.attrs.get(name)
+        logging.info("self.url: %s" % self.url)
         # Inner resoruces for stuff like: GET /users/{id}/applications
-        self.api.resources[name] = Resource(uri=self.api.base_url+'/'+self.url+'/'+name,
-                                            api=self.api)
-        return self.api.resources[name]
-
+        key = self.uri+'/'+name
+        self.api.resources[key] = Resource(uri=key,
+                                           api=self.api)
+        return self.api.resources[key]
 
     def __call__(self, id=None):
-        self.id = id
-        return self
+        logging.info("call.id: %s" % id)
+        logging.info("call.self.url: %s" % self.url)
+        if id == None:
+            return self
+        self.id = str(id)
+        key = self.uri+'/'+self.id
+        self.api.resources[key] = Resource(uri=key,
+                                           api=self.api)
+        return self.api.resources[key]
     
     # Set the "Accept" request header.
     # +info about request headers:
@@ -75,7 +96,6 @@ class Resource(object):
             url = self.url+'/'+str(self.id)
         if len(kwargs)>0:
             url = "%s?%s" % (url, urllib.urlencode(kwargs))
-        print url
         self._request("GET", url)
         return self._getresponse()
 
@@ -86,7 +106,6 @@ class Resource(object):
         headers = {"Content-Type": "application/x-www-form-urlencoded"}
         self._request("POST", self.url, data, headers)
         return self._getresponse()
-
 
     # PUT /resource/id
     def put(self, **kwargs):
@@ -126,11 +145,20 @@ class Resource(object):
         else:
             raise IOError, "unsupported protocol: %s" % self.scheme
 
+        logging.info(">>>>>>>>>>>>>>>>>>>method: %s" % method)
+        logging.info(">>>>>>>>>>>>>>>>>>>url: %s" % url)
+        logging.info(">>>>>>>>>>>>>>>>>>>headers: %s" % headers)
+        logging.info(">>>>>>>>>>>>>>>>>>>body: %s" % body)
         self.conn.request(method, url, body, headers)
 
     def _getresponse(self):
         resp = self.conn.getresponse()
-        if resp.status==200:
+        logging.info("status: %s" % resp.status)
+        logging.info("getheader: %s" % resp.getheader('content-type'))
+        logging.info("read: %s" % resp.read())
+        # TODO: Lets support redirects and more advanced responses
+        # see: http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html
+        if resp.status in (200, 201, 202, 204, 205, 206):
             m = re.match('^([^;]*); charset=(.*)$',
                         resp.getheader('content-type'))
             if m==None:
@@ -139,11 +167,7 @@ class Resource(object):
                 mime, encoding = m.groups()
 
             if mime == 'application/json':
-                try:
-                    import json
-                except:
-                    import simplejson as json
-                ret = json.read(resp.read())
+                ret = json.loads(resp.read())
 
             elif mime == 'application/xml':
                 print 'application/xml not supported yet!'
@@ -155,12 +179,17 @@ class Resource(object):
             ret = None
 
         resp.close()
-        return ret
+
+        if ret:
+            self.attrs.update(ret)
+
+        return self
 
 
 class API(object):
     def __init__(self, base_url):
         self.base_url = base_url
+        self.api_path = urlparse(base_url).path
         self.resources = {}
         self.request_type = None
 
@@ -171,7 +200,11 @@ class API(object):
             self.resources[resource].set_request_type(mime)
 
     def __getattr__(self, name):
-        if not name in self.resources:
-            self.resources[name] = Resource(uri=self.base_url+'/'+name,
-                                            api=self)
-        return self.resources[name]
+        logging.info( "API.getattr.name: %s" % name)
+        
+        key = '/'+name
+        if not key in self.resources:
+            logging.info("Creating resource with uri: %s" % key)
+            self.resources[key] = Resource(uri=key,
+                                           api=self)
+        return self.resources[key]
