@@ -20,7 +20,7 @@ Siesta is a REST client for python
 """
 
 #__all__ = ["API", "Resource"]
-__version__ = "0.2"
+__version__ = "0.3"
 __author__ = "Sebastian Castillo <castillobuiles@gmail.com>"
 __contributors__ = []
 
