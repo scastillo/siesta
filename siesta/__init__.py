@@ -130,6 +130,10 @@ class Resource(object):
     def _request(self, method, url, body=None, headers=None):
         if headers==None:
             headers={}
+            
+        if self.auth:
+            headers.update(self.auth.make_headers())
+        
         if self.conn!=None:
             self.conn.close()
 
@@ -187,11 +191,12 @@ class Resource(object):
 
 
 class API(object):
-    def __init__(self, base_url):
+    def __init__(self, base_url, auth=None):
         self.base_url = base_url
         self.api_path = urlparse(base_url).path
         self.resources = {}
         self.request_type = None
+        self.auth = auth
 
     def set_request_type(self, mime):
         self.request_type = mime
