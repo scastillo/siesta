@@ -131,8 +131,8 @@ class Resource(object):
         if headers==None:
             headers={}
             
-        if self.auth:
-            headers.update(self.auth.make_headers())
+        if self.api.auth:
+            headers.update(self.api.auth.make_headers())
         
         if self.conn!=None:
             self.conn.close()
