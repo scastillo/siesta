@@ -26,12 +26,12 @@ __contributors__ = []
 
 import re
 import time
-import urllib
-import httplib
+import urllib, urllib2
+import httplib, httplib2
 import logging
 import simplejson as json
 
-from urlparse import urlparse
+from urlparse import urlparse, urlsplit, parse_qsl
 
 USER_AGENT = "Python-siesta/%s" % __version__
 
@@ -50,6 +50,7 @@ class Resource(object):
         self.conn = None
         self.headers = {'User-Agent': USER_AGENT}
         self.attrs = {}
+        self.response = None
         
     def __getattr__(self, name):
         """
@@ -63,17 +64,22 @@ class Resource(object):
         logging.info("self.url: %s" % self.url)
         # Inner resoruces for stuff like: GET /users/{id}/applications
         key = self.uri + '/' + name
+        print key
         self.api.resources[key] = Resource(uri=key,
                                            api=self.api)
+        self.api.resources[key].id = self.id
         return self.api.resources[key]
 
     def __call__(self, id=None):
         logging.info("call.id: %s" % id)
         logging.info("call.self.url: %s" % self.url)
+        print "id: " + str(id)
         if id == None:
             return self
+        print "id: " + str(id)
         self.id = str(id)
         key = self.uri + '/' + self.id
+        print key
         self.api.resources[key] = Resource(uri=key,
                                            api=self.api)
         return self.api.resources[key]
@@ -83,22 +89,30 @@ class Resource(object):
     # http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html
     def set_request_type(self, mime):
         if mime.lower() == 'json':
-            mime = 'application/json'
+            mime = 'application/json, text/javascript, */*; q=0.01'
         elif mime.lower() == 'xml':
             mime = 'application/xml'
         self.headers['Accept'] = mime
-
+        
     # GET /resource
     # GET /resource/id?arg1=value1&...
-    def get(self, **kwargs):
+    def get(self, query=None, **kwargs):
+        print "entro al get: " + str(self.id)
         if self.id == None:
             url = self.url
         else:
             url = self.url + '/' + str(self.id)
-        if len(kwargs) > 0:
-            url = "%s?%s" % (url, urllib.urlencode(kwargs))
-        self._request("GET", url)
-        return self._getresponse("GET", url)
+#        params = kwargs
+#        if mime != None:
+#            self.set_request_type(mime)
+        if query:
+            if type(query).__name__ == 'dict':    
+                if len(query) > 0:
+                    url = "%s?%s" % (url, urllib.urlencode(query))
+            else:
+                raise TypeError('get params must to be dict')
+        response, content = self._request("GET", url)
+        return self._getresponse("GET", url, response, content)
 
     # POST /resource
     def post(self, **kwargs):
@@ -109,15 +123,20 @@ class Resource(object):
         return self._getresponse("POST", self.url, data, headers, meta)
 
     # PUT /resource/id
-    def put(self, **kwargs):
-        if not self.id:
-            return
-        url = self.url + '/' + str(self.id)
-        data = kwargs
+    def put(self, data=None,**kwargs):
+        print "entro al put: " + str(self.id)
+        if self.id == None:
+            url = self.url
+        else:
+            url = self.url + '/' + str(self.id)
+        #data = kwargs
         meta = dict([(k, data.pop(k)) for k in data.keys() if k.startswith("__")])
         headers = {"Content-Type": "application/x-www-form-urlencoded"}
-        self._request("PUT", url, data, headers, meta)
-        return self._getresponse("PUT", url, data, headers, meta)
+        #self._request("PUT", url, data, headers, meta)
+        
+        response, content = self._request("PUT", url, data, headers, meta)        
+        print response.status
+        return self._getresponse("PUT", url, response, content, data, headers, meta)
 
     # DELETE /resource/id
     def delete(self, id, **kwargs):
@@ -137,13 +156,24 @@ class Resource(object):
 
         if not 'User-Agent' in headers:
             headers['User-Agent'] = self.headers['User-Agent']
+            
         if not 'Accept' in headers and 'Accept' in self.headers:
             headers['Accept'] = self.headers['Accept']
+        
+        if not 'Accept-Encoding' in headers and not 'Accept-Encoding' in self.headers:
+             headers['Accept-Encoding'] = "gzip,deflate"
 
+        if not 'Connection' in headers and not 'Connection' in self.headers:
+            headers['Connection'] = "keep-alive"
+        if not 'Accept-Charset' in headers and not 'Accept-Charset' in self.headers:
+            headers['Accept-Charset'] = "ISO-8859-1,utf-8;q=0.7,*;q=0.7"
+        
         if self.scheme == "http":
-            self.conn = httplib.HTTPConnection(self.host)
+            #self.conn = httplib.HTTPConnection(self.host)
+            self.conn = httplib2.Http()
         elif self.scheme == "https":
-            self.conn = httplib.HTTPSConnection(self.host)
+            #self.conn = httplib.HTTPSConnection(self.host)
+            self.conn = httplib2.Http()
         else:
             raise IOError("unsupported protocol: %s" % self.scheme)
 
@@ -153,13 +183,22 @@ class Resource(object):
         logging.info(">>>>>>>>>>>>>>>>>>>url: %s" % url)
         logging.info(">>>>>>>>>>>>>>>>>>>headers: %s" % headers)
         logging.info(">>>>>>>>>>>>>>>>>>>body: %s" % body)
-        self.conn.request(method, url, body, headers)
+        
+        
+        self.conn.follow_all_redirects = True
+        #self.conn.request(method, url, body, headers)
+        return self.conn.request(self.scheme + '://' + self.host + url, method=method, body=body, headers=headers, redirections=6)
 
-    def _getresponse(self, method, url, body={}, headers={}, meta={}):
-        resp = self.conn.getresponse()
+    def _getresponse(self, method, url, response, content,body={}, headers={}, meta={}):
+        #resp = self.conn.getresponse()
+        #resp_status = resp.status
+        #resp_body = resp.read()
+        resp_status = response.status
+        resp_body = content
+        
         #logging.info("status: %s" % resp.status)
-        logging.info("getheader: %s" % resp.getheader('content-type'))
-        logging.info("__read: %s" % resp.read())
+        logging.info("getheader: %s" % response['content-type'])
+        logging.info("__read: %s" % resp_body)
         # TODO: Lets support redirects and more advanced responses
         # see: http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html
 
@@ -191,8 +230,8 @@ class Resource(object):
         #          the reason for failure.
 
         #logging.info('status type: %s' % type(resp.status))
-        if resp.status == 202:
-            logging.info('Starting a 202 Accept polling porcess...')
+        if resp_status == 202:
+            logging.info('Starting a 202 Accept polling process...')
             status_url = resp.getheader('content-location')
             if not status_url:
                 raise Exception('Empty content-location from server')
@@ -216,30 +255,80 @@ class Resource(object):
             resource = Resource(uri=urlparse(location).path, api=self.api).get()
             return resource
         
-        if resp.status in (200, 201, 202, 204, 205, 206):
+        # Whit httplib2 and urllib2 is not necesary to handle 301 response
+        # by default we follow 6 redirects
+#        elif resp_status == 301:
+#            logging.info('Starting a 301 Redirect process...')
+#            location_url = resp.getheader('Location')
+#            (scheme, netloc, path, query, fragment) = urlsplit(location_url)
+#            params = {}
+#            if query != '': 
+#                params = parse_qsl(query)
+#                params = dict(params)
+#            print location_url
+#            if not location_url:
+#                raise Exception('Empty Location from server')
+#
+#            location_uri = urlparse(location_url).path
+#            if location_uri ==  location_uri.replace(self.api.api_path, ''):
+#                raise Exception('Api Base location change to ' + location_uri + ' and the api-base is ' + self.api.api_path)
+#            location_uri =  location_uri.replace(self.api.api_path, '')
+#
+#            if len(params) > 0:
+#                if method.lower() == 'get':
+#                    resource  = Resource(uri=location_uri, api=self.api).get(params)
+#                elif method.lower() == 'post':
+#                    resource  = Resource(uri=location_uri, api=self.api).post(params)
+#                elif method.lower() == 'put':
+#                    resource  = Resource(uri=location_uri, api=self.api).put(params)
+#                elif method.lower() == 'delete':
+#                    resource  = Resource(uri=location_uri, api=self.api).delete(params)
+#            else:
+#                if method.lower() == 'get':
+#                    resource  = Resource(uri=location_uri, api=self.api).get()
+#                elif method.lower() == 'post':
+#                    resource  = Resource(uri=location_uri, api=self.api).post()
+#                elif method.lower() == 'put':
+#                    resource  = Resource(uri=location_uri, api=self.api).put()
+#                elif method.lower() == 'delete':
+#                    resource  = Resource(uri=location_uri, api=self.api).delete()
+#                else: 
+#                    raise Exception                    
+#            return resource            
+        
+        if resp_status in (200, 201, 202, 204, 205, 206):
             m = re.match('^([^;]*); charset=(.*)$',
-                        resp.getheader('content-type'))
+                        response['content-type'])
             if m == None:
                 mime, encoding = ('', '')
             else:
                 mime, encoding = m.groups()
 
             if mime == 'application/json':
-                ret = json.loads(resp.read())
-
+                ret = json.loads(resp_body)
+                #This for is because some servers returne de json into " or ' and the firstime
+                #of json.loads just creat a str
+                for i in xrange(0,1):
+                    if type(ret).__name__ != 'list' and type(ret).__name__ != 'dict':
+                        ret = json.loads(ret)
+                if type(ret).__name__ != 'list' and type(ret).__name__ != 'dict':
+                    raise TypeError('The response content is not json is ' + type(ret).__name__)
             elif mime == 'application/xml':
                 print 'application/xml not supported yet!'
-                ret = resp.read()
+                ret = resp_body
 
             else:
-                ret = resp.read()
+                ret = resp_body
         else:
-            ret = None
-            
-        resp.close()
+            if resp_body:
+                ret = resp_body
+            else: 
+                ret = None
+        self.response = resp_status 
+        #resp.close()
 
         if ret:
-            self.attrs.update(ret)
+            self.attrs = ret
             # return self here and none otherwise?
         return self
 
