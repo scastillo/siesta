@@ -45,7 +45,7 @@ class Resource(object):
         logging.info("init.uri: %s" % uri)
         self.api = api
         self.uri = uri
-        self.scheme, self.host, self.url, z1, z2 = httplib.urlsplit(self.api.base_url + '/' + self.uri)
+        self.scheme, self.host, self.url, z1, z2 = httplib.urlsplit(self.api.base_url + self.uri)
         self.id = None
         self.conn = None
         self.headers = {'User-Agent': USER_AGENT}
@@ -246,7 +246,7 @@ class Resource(object):
 
 class API(object):
     def __init__(self, base_url, auth=None):
-        self.base_url = base_url
+        self.base_url = base_url + '/' if not base_url.endswith('/') else base_url
         self.api_path = urlparse(base_url).path
         self.resources = {}
         self.request_type = None
@@ -261,7 +261,7 @@ class API(object):
     def __getattr__(self, name):
         logging.info("API.getattr.name: %s" % name)
         
-        key = '/' + name
+        key = name
         if not key in self.resources:
             logging.info("Creating resource with uri: %s" % key)
             self.resources[key] = Resource(uri=key,
