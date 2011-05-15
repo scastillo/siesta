@@ -7,7 +7,7 @@ from siesta import __version__
 setup(
     name='siesta',
     version=__version__,
-    description='Sit back, relax and enjoy of your python REST client',
+    description='Sit back, relax and enjoy your python REST client',
     author='Sebastián Castillo Builes',
     author_email='castillobuiles@gmail.com',
     license='GPL',
