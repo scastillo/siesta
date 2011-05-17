@@ -198,10 +198,10 @@ class Resource(object):
                 raise Exception('Empty content-location from server')
 
             status_uri = urlparse(status_url).path
-            status  = Resource(uri=status_uri, api=self.api).get()
+            status, st_resp  = Resource(uri=status_uri, api=self.api).get()
             retries = 0
             MAX_RETRIES = 3
-            resp_status = status.conn.getresponse().status
+            resp_status = st_resp.status
             logging.info("##########33>>>>>>>> status: %s" % resp_status)
             while resp_status != 303 and retries < MAX_RETRIES:
                 logging.info('retry #%s' % retries)
@@ -241,7 +241,7 @@ class Resource(object):
         if ret:
             self.attrs.update(ret)
             # return self here and none otherwise?
-        return self
+        return self, resp
 
 
 class API(object):

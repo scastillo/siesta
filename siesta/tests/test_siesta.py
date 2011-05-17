@@ -35,8 +35,9 @@ class TestSiesta(BaseTestCase):
         self.response.read.return_value = expected_response
         self.response.status = 200
 
-        obj = self.api.obj.post(attr='value')
+        obj, resp = self.api.obj.post(attr='value')
         logging.info(obj.headers)
+        logging.info("response: %s" % resp)
         #raise Exception()
         self.assertEqual(expected_response, json.dumps(obj.attrs))
 
@@ -44,8 +45,8 @@ class TestSiesta(BaseTestCase):
         expected_response = json.dumps(dict(user='123', id='QWERTY123'))
         self.response.read.return_value = expected_response
         self.response.status = 200
-
-        obj = self.api.obj(1).put(attr='value')
+# lunes 730 
+        obj = self.api.obj.put(attr='value')
         logging.info(obj)
         
     def test_delete(self):
@@ -53,7 +54,7 @@ class TestSiesta(BaseTestCase):
         self.response.read.return_value = expected_response
         self.response.status = 200
         
-        obj = self.api.obj().delete(1)
+        obj, resp = self.api.obj().delete(1)
         logging.info(obj)
 
     def test_202_accepted(self):
@@ -99,7 +100,7 @@ class TestSiesta(BaseTestCase):
         )
         response.read.return_value = expected_response
 
-        obj = self.api.collection.post(attr='value')
+        obj, resp = self.api.collection.post(attr='value')
         logging.info(obj)
 
     def test_siesta(self):
@@ -107,7 +108,7 @@ class TestSiesta(BaseTestCase):
         self.response.read.return_value = expected_response
         self.response.status = 200
         
-        sess = self.api.sessions().post(user='123')
+        sess, resp = self.api.sessions().post(user='123')
         #user1 = self.api.users(id=1)
         apps = self.api.users(id=1).applications(123)
         apps.get()
