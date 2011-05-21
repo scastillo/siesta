@@ -2,7 +2,8 @@
 # -*- coding: utf-8 -*-
 
 from setuptools import setup, find_packages
-from siesta import __version__
+
+__version__="0.4.4"
 
 setup(
     name='siesta',
