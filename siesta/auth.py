@@ -1,3 +1,6 @@
+import base64
+
+
 class Auth(object):
     """Base class for specific auth schemes"""
     
@@ -24,7 +27,8 @@ class APIKeyAuth(Auth):
     def make_headers(self):
         return {self.auth_header_name: self.api_key, }
 
-Class BasicAuth(Auth):
+
+class BasicAuth(Auth):
     """
     Authentication using username and password
     """
@@ -41,4 +45,4 @@ Class BasicAuth(Auth):
     
     def make_headers(self):
         token = self.encode_params()
-return {self.auth_header_name: 'Basic ' + token, }
+        return {self.auth_header_name: 'Basic ' + token, }
