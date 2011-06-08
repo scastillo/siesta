@@ -35,6 +35,7 @@ from urlparse import urlparse
 
 USER_AGENT = "Python-siesta/%s" % __version__
 
+logging.basicConfig(level=4)
 
 class Resource(object):
 
@@ -50,6 +51,7 @@ class Resource(object):
         self.conn = None
         self.headers = {'User-Agent': USER_AGENT}
         self.attrs = {}
+        self._errors = {}
         
     def __getattr__(self, name):
         """
@@ -159,7 +161,7 @@ class Resource(object):
         resp = self.conn.getresponse()
         #logging.info("status: %s" % resp.status)
         logging.info("getheader: %s" % resp.getheader('content-type'))
-        logging.info("__read: %s" % resp.read())
+        #logging.info("__read: %s" % resp.read())
         # TODO: Lets support redirects and more advanced responses
         # see: http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html
 
@@ -216,30 +218,48 @@ class Resource(object):
             resource = Resource(uri=urlparse(location).path, api=self.api).get()
             return resource
         
-        if resp.status in (200, 201, 202, 204, 205, 206):
-            m = re.match('^([^;]*); charset=(.*)$',
-                        resp.getheader('content-type'))
-            if m == None:
-                mime, encoding = ('', '')
-            else:
-                mime, encoding = m.groups()
-
-            if mime == 'application/json':
-                ret = json.loads(resp.read())
-
-            elif mime == 'application/xml':
-                print 'application/xml not supported yet!'
-                ret = resp.read()
-
-            else:
-                ret = resp.read()
+        m = re.match('^([^;]*); charset=(.*)$',
+                     resp.getheader('content-type'))
+        if m == None:
+            mime, encoding = ('', '')
         else:
-            ret = None
+            mime, encoding = m.groups()
             
+        if mime == 'application/json':
+            ret = json.loads(resp.read())
+            
+        elif mime == 'application/xml':
+            print 'application/xml not supported yet!'
+            ret = resp.read()
+        else:
+            ret = resp.read()
         resp.close()
 
-        if ret:
-            self.attrs.update(ret)
+        errors = True
+        if str(resp.status).startswith("2") or str(resp.status).startswith("3"):
+            errors = False
+
+        print "Errors: %s" % errors
+        print "Type ret: %s" % type(ret)
+        print ret
+        
+        if isinstance(ret, list):
+            ret_list = []
+            for i in ret:
+                resource = Resource(uri=self.uri+"/"+i.get('name', ''), api=self.api)
+                if errors:
+                    resource._errors = i
+                else:
+                    resource.attrs = i
+                ret_list.append(resource)
+            return ret_list, resp
+        elif isinstance(ret, dict):
+            if errors:
+                print "Updating errors"
+                self._errors.update(ret.get("error", {}))
+            else:
+                self.attrs.update(ret)
+                self._errors = {}
             # return self here and none otherwise?
         return self, resp
 
