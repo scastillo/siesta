@@ -43,7 +43,7 @@ class Resource(object):
     # so Resource can have a minimalist namespace  population
     # and minimize collitions with resource attributes
     def __init__(self, uri, api):
-        logging.info("init.uri: %s" % uri)
+        #logging.info("init.uri: %s" % uri)
         self.api = api
         self.uri = uri
         self.scheme, self.host, self.url, z1, z2 = httplib.urlsplit(self.api.base_url + self.uri)
@@ -58,11 +58,11 @@ class Resource(object):
         Resource attributes (eg: user.name) have priority
         over inner rerouces (eg: users(id=123).applications)
         """
-        logging.info("getattr.name: %s" % name)
+        #logging.info("getattr.name: %s" % name)
         # Reource attrs like: user.name
         if name in self.attrs:
             return self.attrs.get(name)
-        logging.info("self.url: %s" % self.url)
+        #logging.info("self.url: %s" % self.url)
         # Inner resoruces for stuff like: GET /users/{id}/applications
         key = self.uri + '/' + name
         self.api.resources[key] = Resource(uri=key,
@@ -70,8 +70,8 @@ class Resource(object):
         return self.api.resources[key]
 
     def __call__(self, id=None):
-        logging.info("call.id: %s" % id)
-        logging.info("call.self.url: %s" % self.url)
+        #logging.info("call.id: %s" % id)
+        #logging.info("call.self.url: %s" % self.url)
         if id == None:
             return self
         self.id = str(id)
@@ -151,16 +151,16 @@ class Resource(object):
 
         body = urllib.urlencode(body)
 
-        logging.info(">>>>>>>>>>>>>>>>>>>method: %s" % method)
-        logging.info(">>>>>>>>>>>>>>>>>>>url: %s" % url)
-        logging.info(">>>>>>>>>>>>>>>>>>>headers: %s" % headers)
-        logging.info(">>>>>>>>>>>>>>>>>>>body: %s" % body)
+        #logging.info(">>>>>>>>>>>>>>>>>>>method: %s" % method)
+        #logging.info(">>>>>>>>>>>>>>>>>>>url: %s" % url)
+        #logging.info(">>>>>>>>>>>>>>>>>>>headers: %s" % headers)
+        #logging.info(">>>>>>>>>>>>>>>>>>>body: %s" % body)
         self.conn.request(method, url, body, headers)
 
     def _getresponse(self, method, url, body={}, headers={}, meta={}):
         resp = self.conn.getresponse()
         #logging.info("status: %s" % resp.status)
-        logging.info("getheader: %s" % resp.getheader('content-type'))
+        #logging.info("getheader: %s" % resp.getheader('content-type'))
         #logging.info("__read: %s" % resp.read())
         # TODO: Lets support redirects and more advanced responses
         # see: http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html
@@ -194,7 +194,7 @@ class Resource(object):
 
         #logging.info('status type: %s' % type(resp.status))
         if resp.status == 202:
-            logging.info('Starting a 202 Accept polling porcess...')
+            #logging.info('Starting a 202 Accept polling porcess...')
             status_url = resp.getheader('content-location')
             if not status_url:
                 raise Exception('Empty content-location from server')
@@ -204,9 +204,9 @@ class Resource(object):
             retries = 0
             MAX_RETRIES = 3
             resp_status = st_resp.status
-            logging.info("##########33>>>>>>>> status: %s" % resp_status)
+            #logging.info("##########33>>>>>>>> status: %s" % resp_status)
             while resp_status != 303 and retries < MAX_RETRIES:
-                logging.info('retry #%s' % retries)
+                #logging.info('retry #%s' % retries)
                 retries += 1
                 status.get()
                 time.sleep(5)
@@ -239,9 +239,9 @@ class Resource(object):
         if str(resp.status).startswith("2") or str(resp.status).startswith("3"):
             errors = False
 
-        print "Errors: %s" % errors
-        print "Type ret: %s" % type(ret)
-        print ret
+        #print "Errors: %s" % errors
+        #print "Type ret: %s" % type(ret)
+        #print ret
         
         if isinstance(ret, list):
             ret_list = []
@@ -255,7 +255,7 @@ class Resource(object):
             return ret_list, resp
         elif isinstance(ret, dict):
             if errors:
-                print "Updating errors"
+                #print "Updating errors"
                 self._errors.update(ret.get("error", {}))
             else:
                 self.attrs.update(ret)
@@ -279,11 +279,11 @@ class API(object):
             self.resources[resource].set_request_type(mime)
 
     def __getattr__(self, name):
-        logging.info("API.getattr.name: %s" % name)
+        #logging.info("API.getattr.name: %s" % name)
         
         key = name
         if not key in self.resources:
-            logging.info("Creating resource with uri: %s" % key)
+            #logging.info("Creating resource with uri: %s" % key)
             self.resources[key] = Resource(uri=key,
                                            api=self)
         return self.resources[key]
