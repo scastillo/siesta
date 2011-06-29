@@ -35,7 +35,8 @@ from urlparse import urlparse
 
 USER_AGENT = "Python-siesta/%s" % __version__
 
-logging.basicConfig(level=4)
+logging.basicConfig(level=0)
+
 
 class Resource(object):
 
@@ -159,6 +160,7 @@ class Resource(object):
 
     def _getresponse(self, method, url, body={}, headers={}, meta={}):
         resp = self.conn.getresponse()
+        
         #logging.info("status: %s" % resp.status)
         #logging.info("getheader: %s" % resp.getheader('content-type'))
         #logging.info("__read: %s" % resp.read())
@@ -217,24 +219,28 @@ class Resource(object):
             location = status.conn.getresponse().getheader('location')
             resource = Resource(uri=urlparse(location).path, api=self.api).get()
             return resource
-        
+        #logging.info("resp.getheader(): %s" % resp.getheader('content-type'))
         m = re.match('^([^;]*); charset=(.*)$',
                      resp.getheader('content-type'))
+        #logging.info("response: %s" % resp)
+        
         if m == None:
             mime, encoding = ('', '')
         else:
             mime, encoding = m.groups()
-            
+        #logging.info("...")
         if mime == 'application/json':
+            #logging.info("json")
             ret = json.loads(resp.read())
-            
+            #logging.info("read: %s" % resp.read())
+            #logging.info("ret: %s" % ret)
         elif mime == 'application/xml':
             print 'application/xml not supported yet!'
             ret = resp.read()
         else:
             ret = resp.read()
         resp.close()
-
+        #print "Siesta: response.read: %s"  % ret
         errors = True
         if str(resp.status).startswith("2") or str(resp.status).startswith("3"):
             errors = False
@@ -244,12 +250,14 @@ class Resource(object):
         #print ret
         
         if isinstance(ret, list):
+            #print "ret is list: %s" % ret
             ret_list = []
             for i in ret:
-                resource = Resource(uri=self.uri+"/"+i.get('name', ''), api=self.api)
+                resource = Resource(uri=self.uri + "/" + i.get('name', ''), api=self.api)
                 if errors:
                     resource._errors = i
                 else:
+                    #print "resource is %s: %s" % (type(resource), resource.attrs)
                     resource.attrs = i
                 ret_list.append(resource)
             return ret_list, resp
