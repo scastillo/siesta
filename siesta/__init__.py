@@ -20,7 +20,7 @@ Siesta is a REST client for python
 """
 
 #__all__ = ["API", "Resource"]
-__version__ = "0.5.1"
+__version__ = "0.5.2"
 __author__ = "Sebastian Castillo <castillobuiles@gmail.com>"
 __contributors__ = []
 
@@ -220,7 +220,7 @@ class Resource(object):
             resource = Resource(uri=urlparse(location).path, api=self.api).get()
             return resource
         #logging.info("resp.getheader(): %s" % resp.getheader('content-type'))
-        m = re.match('^([^;]*); charset=(.*)$',
+        m = re.match('^([^;]*)(?:;\s*charset=(.*))?$',
                      resp.getheader('content-type'))
         #logging.info("response: %s" % resp)
         
