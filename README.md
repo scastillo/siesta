@@ -18,6 +18,6 @@
 
 ##Other REST clients for python
 
-*   [*pylib*](http://example.com/)
-*   [*python-rest-client*](http://example.com/)
-*   [*pyrest*](http://example.com/)
+*   pylib
+*   [*python-rest-client*](https://code.google.com/p/python-rest-client/)
+*   [*pyrest*](http://github.com/travisby/pyrest)
