@@ -13,7 +13,7 @@
      # POST /resource
      api.resource.post(attr=value, attr2=value2, ...)
      # GET /resource/id/resource_collection
-     api.resoure(id).resource_collection().get()
+     api.resource(id).resource_collection().get()
 
 
 ##Other REST clients for python
