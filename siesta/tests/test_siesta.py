@@ -119,4 +119,4 @@ class TestSiesta(BaseTestCase):
         logging.info("session.user: %s" % sess.user)
 
         self.response.getheader.assert_called_with('content-type')
-        self.assertEquals(expected_response, json.dumps(sess.attrs))
+        self.assertEqual(expected_response, json.dumps(sess.attrs))

@@ -26,12 +26,12 @@ __contributors__ = []
 
 import re
 import time
-import urllib
-import httplib
+import urllib.request, urllib.parse, urllib.error
+import http.client
 import logging
 import simplejson as json
 
-from urlparse import urlparse
+from urllib.parse import urlparse
 
 USER_AGENT = "Python-siesta/%s" % __version__
 
@@ -47,7 +47,7 @@ class Resource(object):
         #logging.info("init.uri: %s" % uri)
         self.api = api
         self.uri = uri
-        self.scheme, self.host, self.url, z1, z2 = httplib.urlsplit(self.api.base_url + self.uri)
+        self.scheme, self.host, self.url, z1, z2 = http.client.urlsplit(self.api.base_url + self.uri)
         self.id = None
         self.conn = None
         self.headers = {'User-Agent': USER_AGENT}
@@ -99,14 +99,14 @@ class Resource(object):
         else:
             url = self.url + '/' + str(self.id)
         if len(kwargs) > 0:
-            url = "%s?%s" % (url, urllib.urlencode(kwargs))
+            url = "%s?%s" % (url, urllib.parse.urlencode(kwargs))
         self._request("GET", url)
         return self._getresponse("GET", url)
 
     # POST /resource
     def post(self, **kwargs):
         data = kwargs
-        meta = dict([(k, data.pop(k)) for k in data.keys() if k.startswith("__")])
+        meta = dict([(k, data.pop(k)) for k in list(data.keys()) if k.startswith("__")])
         headers = {"Content-Type": "application/x-www-form-urlencoded"}
         self._request("POST", self.url, data, headers, meta)
         return self._getresponse("POST", self.url, data, headers, meta)
@@ -117,7 +117,7 @@ class Resource(object):
             return
         url = self.url + '/' + str(self.id)
         data = kwargs
-        meta = dict([(k, data.pop(k)) for k in data.keys() if k.startswith("__")])
+        meta = dict([(k, data.pop(k)) for k in list(data.keys()) if k.startswith("__")])
         headers = {"Content-Type": "application/x-www-form-urlencoded"}
         self._request("PUT", url, data, headers, meta)
         return self._getresponse("PUT", url, data, headers, meta)
@@ -126,7 +126,7 @@ class Resource(object):
     def delete(self, id, **kwargs):
         url = self.url + '/' + str(id)
         data = kwargs
-        meta = dict([(k, data.pop(k)) for k in data.keys() if k.startswith("__")])
+        meta = dict([(k, data.pop(k)) for k in list(data.keys()) if k.startswith("__")])
         headers = {"Content-Type": "application/x-www-form-urlencoded"}
         self._request("DELETE", url, data, headers, meta)
         return self._getresponse("DELETE", url, data, headers, meta)
@@ -144,13 +144,13 @@ class Resource(object):
             headers['Accept'] = self.headers['Accept']
 
         if self.scheme == "http":
-            self.conn = httplib.HTTPConnection(self.host)
+            self.conn = http.client.HTTPConnection(self.host)
         elif self.scheme == "https":
-            self.conn = httplib.HTTPSConnection(self.host)
+            self.conn = http.client.HTTPSConnection(self.host)
         else:
             raise IOError("unsupported protocol: %s" % self.scheme)
 
-        body = urllib.urlencode(body)
+        body = urllib.parse.urlencode(body)
 
         #logging.info(">>>>>>>>>>>>>>>>>>>method: %s" % method)
         #logging.info(">>>>>>>>>>>>>>>>>>>url: %s" % url)
@@ -235,7 +235,7 @@ class Resource(object):
             #logging.info("read: %s" % resp.read())
             #logging.info("ret: %s" % ret)
         elif mime == 'application/xml':
-            print 'application/xml not supported yet!'
+            print('application/xml not supported yet!')
             ret = resp.read()
         else:
             ret = resp.read()
