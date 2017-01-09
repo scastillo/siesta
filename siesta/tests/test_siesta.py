@@ -18,8 +18,9 @@ class TestSiesta(BaseTestCase):
         self.response_mock = self.response_patcher.start()
 
         self.response = self.response_mock.return_value
-        #self.response.status = 200
-        self.response.getheader.return_value = "application/json; charset=UTF-8"
+        self.response.getheader.return_value = (
+            "application/json; charset=UTF-8"
+        )
 
         self.getresponse_mock.return_value = self.response
 
@@ -38,30 +39,29 @@ class TestSiesta(BaseTestCase):
         obj, resp = self.api.obj.post(attr='value')
         logging.info(obj.headers)
         logging.info("response: %s" % resp)
-        #raise Exception()
         self.assertEqual(expected_response, json.dumps(obj.attrs))
 
     def test_put(self):
         expected_response = json.dumps(dict(user='123', id='QWERTY123'))
         self.response.read.return_value = expected_response
         self.response.status = 200
-# lunes 730 
+        # lunes 730
         obj = self.api.obj.put(attr='value')
         logging.info(obj)
-        
+
     def test_delete(self):
         expected_response = json.dumps(dict(user='123', id='QWERTY123'))
         self.response.read.return_value = expected_response
         self.response.status = 200
-        
+
         obj, resp = self.api.obj().delete(1)
         logging.info(obj)
 
     def test_202_accepted(self):
-        # First accepted for start procesing, then response two time still processnig
-        # finally a see other on complete.
+        # First accepted for start procesing, then response two time still
+        # processing finally a see other on complete.
 
-        #response
+        # response
         statuses = [202]
 
         def side_effect():
@@ -70,7 +70,7 @@ class TestSiesta(BaseTestCase):
         statuses_mock = Mock()
         statuses_mock.side_effect = side_effect
 
-        #FIXME fix the pop crazy behaviour
+        # FIXME fix the pop crazy behaviour
         class MyResponse(Mock):
             @property
             def status(_self):
@@ -81,17 +81,17 @@ class TestSiesta(BaseTestCase):
         response = MyResponse()
         self.getresponse_mock.return_value = response
 
-        #getheader
+        # getheader
         def getheader(header):
             headers = {
                 'content-type': 'application/json; charset=UTF-8',
                 'content-location': 'http://localhost/resource/123456/status',
                 'location': 'http://localhost/resource/123456',
                 }
-            return headers.get(header, sentinel.DEFAULT) 
+            return headers.get(header, sentinel.DEFAULT)
         response.getheader.side_effect = getheader
 
-        #read
+        # read
         expected_response = json.dumps(
             dict(
                 state='pending',
@@ -107,9 +107,8 @@ class TestSiesta(BaseTestCase):
         expected_response = json.dumps(dict(user='123', id='QWERTY123'))
         self.response.read.return_value = expected_response
         self.response.status = 200
-        
+
         sess, resp = self.api.sessions().post(user='123')
-        #user1 = self.api.users(id=1)
         apps = self.api.users(id=1).applications(123)
         apps.get()
         logging.info(self.api.resources)
