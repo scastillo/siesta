@@ -76,7 +76,7 @@ class TestSiesta(BaseTestCase):
             def status(_self):
                 try:
                     return statuses.pop()
-                except:
+                except IndexError:
                     return 303
         response = MyResponse()
         self.getresponse_mock.return_value = response
